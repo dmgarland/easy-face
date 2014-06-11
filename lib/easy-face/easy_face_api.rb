@@ -24,7 +24,7 @@ class EasyFaceApi < Sinatra::Base
   end
 
   post '/photos/:user_id/detect' do
-    urls = []
+    urls = params["urls"]
     users = {}
 
     faces = client.faces_recognize(:uids => user_id, :urls => urls.join(","))

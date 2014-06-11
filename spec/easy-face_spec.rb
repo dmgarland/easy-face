@@ -33,11 +33,12 @@ describe "EasyFace" do
     describe "POST to /photos/:user_id/detect" do
       before do
         stub_request(:post, "http://api.skybiometry.com/fc/faces/recognize.json").
-         with(:body => {"api_key"=>"13eb99ff98224044bfcf5e57f2b8d4be", "api_secret"=>"166e13b840274e56b9634efa4dea511a", "uids"=>"dan@endsvchack", "urls"=>""},
-              :headers => {'Accept'=>'*/*; q=0.5, application/xml', 'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'112', 'Content-Type'=>'application/x-www-form-urlencoded', 'User-Agent'=>'Ruby'}).
+         with(:body => {"api_key"=>"13eb99ff98224044bfcf5e57f2b8d4be", "api_secret"=>"166e13b840274e56b9634efa4dea511a", "uids"=>"dan@endsvchack", "urls"=>"http://someurl.com/image.jpg,http://someurl.com/some_other_image.jpg"},
+              :headers => {'Accept'=>'*/*; q=0.5, application/xml', 'Accept-Encoding'=>'gzip, deflate', 'Content-Length'=>'198', 'Content-Type'=>'application/x-www-form-urlencoded', 'User-Agent'=>'Ruby'}).
          to_return(:status => 200, :body => File.read('spec/fixtures/recognise.json'))
 
-        post '/photos/dan/detect'
+        post '/photos/dan/detect', "urls" => %w(http://someurl.com/image.jpg
+          http://someurl.com/some_other_image.jpg)
       end
 
       it "should return a list of similar" do
