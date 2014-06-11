@@ -1,0 +1,1 @@
+require 'easy-face/easy_face_api'
