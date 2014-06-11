@@ -9,8 +9,6 @@ class EasyFaceApi < Sinatra::Base
   set :show_exceptions, false
 
   post '/photos' do
-    user_id = "#{params["user_id"]}@#{settings.skyb_namespace}"
-
     params["photos"].each do |photo|
       # Detect faces
       detect = client.faces_detect(:file => photo[:tempfile])
@@ -26,12 +24,41 @@ class EasyFaceApi < Sinatra::Base
   end
 
   post '/photos/:user_id/detect' do
+    urls = []
+    users = {}
 
+    faces = client.faces_recognize(:uids => user_id, :urls => urls.join(","))
+    faces["photos"].each do |photo|
+      tag = photo["tags"].first
+      if tag && tag["uids"]
+        matches = tag["uids"]
+        if matches && matches.length > 0
+          best_guess = matches.map do |m|
+            {
+              :user_id => m["uid"].split("@").first,
+              :confidence => m["confidence"]
+            }
+          end.sort {|a,b| b[:confidence] <=> a[:confidence]}.first
+
+          current_confidence = users[best_guess[:user_id]]
+          if current_confidence.nil? || current_confidence < best_guess[:confidence]
+            users[best_guess[:user_id]] = best_guess[:confidence]
+          end
+        end
+      end
+    end
+
+    content_type :json
+    users.to_json
   end
 
   protected
   def client
     @client ||= Face.get_client(:api_key => settings.skyb_api_key,
       :api_secret => settings.skyb_api_secret)
+  end
+
+  def user_id
+    @user_id ||= "#{params["user_id"]}@#{settings.skyb_namespace}"
   end
 end
