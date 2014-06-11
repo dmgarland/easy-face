@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'face'
+require 'pry'
 
 class EasyFaceApi < Sinatra::Base
   set :skyb_api_key, "13eb99ff98224044bfcf5e57f2b8d4be"
@@ -11,7 +12,7 @@ class EasyFaceApi < Sinatra::Base
   post '/photos' do
     params["photos"].each do |photo|
       # Detect faces
-      detect = client.faces_detect(:file => photo[:tempfile])
+      detect = client.faces_detect(:file => uploaded_file(photo))
       # Save (tag) the photo as the given user_id
       tag_id = detect["photos"].first["tags"].first["tid"]
       tag = client.tags_save(:tids => tag_id, :uid => user_id)
@@ -60,5 +61,12 @@ class EasyFaceApi < Sinatra::Base
 
   def user_id
     @user_id ||= "#{params["user_id"]}@#{settings.skyb_namespace}"
+  end
+
+  # TODO - Upload only supports JPG right now :/
+  def uploaded_file(photo)
+    picture_file = "#{photo[:tempfile].path}.jpg"
+    FileUtils.cp photo[:tempfile].path, picture_file
+    File.new(picture_file, 'rb')
   end
 end
