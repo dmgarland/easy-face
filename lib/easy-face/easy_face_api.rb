@@ -9,13 +9,24 @@ class EasyFaceApi < Sinatra::Base
   set :show_exceptions, false
 
   post '/photos' do
+    user_id = "#{params["user_id"]}@#{settings.skyb_namespace}"
+
     params["photos"].each do |photo|
+      # Detect faces
       detect = client.faces_detect(:file => photo[:tempfile])
+      # Save (tag) the photo as the given user_id
       tag_id = detect["photos"].first["tags"].first["tid"]
-      user_id = "#{params["user_id"]}@#{settings.skyb_namespace}"
       tag = client.tags_save(:tids => tag_id, :uid => user_id)
     end
+
+    # Train the face software with the new photos
+    client.faces_train(:uids => user_id)
+
     201
+  end
+
+  post '/photos/:user_id/detect' do
+
   end
 
   protected
