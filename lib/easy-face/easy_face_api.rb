@@ -49,6 +49,9 @@ class EasyFaceApi < Sinatra::Base
       end
     end
 
+    # Don't include the original user that we are testing...
+    users.delete params[:user_id].to_i
+
     content_type :json
     users.to_json
   end
