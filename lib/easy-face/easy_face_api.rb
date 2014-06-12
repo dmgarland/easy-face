@@ -37,6 +37,7 @@ class EasyFaceApi < Sinatra::Base
           best_guess = matches.map do |m|
             {
               :user_id => m["uid"].split("@").first,
+              :url => photo["url"],
               :confidence => m["confidence"]
             }
           end.sort {|a,b| b[:confidence] <=> a[:confidence]}.first
