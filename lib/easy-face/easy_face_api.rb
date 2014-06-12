@@ -37,14 +37,16 @@ class EasyFaceApi < Sinatra::Base
           best_guess = matches.map do |m|
             {
               :user_id => m["uid"].split("@").first,
-              :url => photo["url"],
               :confidence => m["confidence"]
             }
           end.sort {|a,b| b[:confidence] <=> a[:confidence]}.first
 
           current_confidence = users[best_guess[:user_id]]
-          if current_confidence.nil? || current_confidence < best_guess[:confidence]
-            users[best_guess[:user_id]] = best_guess[:confidence]
+          if current_confidence.nil? || current_confidence[:confidence] < best_guess[:confidence]
+            users[best_guess[:user_id]] = {
+              :confidence => best_guess[:confidence],
+              :url => photo["url"]
+            }
           end
         end
       end

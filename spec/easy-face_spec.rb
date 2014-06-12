@@ -42,7 +42,7 @@ describe "EasyFace" do
       end
 
       it "should return a list of similar" do
-        JSON(last_response.body).should eq({"dan" => 100})
+        JSON(last_response.body).should eq({"dan" => { "confidence" => 100, "url" => 'http://www.dangarland.co.uk/images/endsvchack/madrid.jpg'}})
       end
     end
   end
