@@ -8,6 +8,7 @@ class EasyFaceApi < Sinatra::Base
   set :skyb_namespace, "endsvchack"
   set :raise_errors, true
   set :show_exceptions, false
+  set :log_file, 'out.log'
 
   post '/photos' do
     params["photos"].each do |photo|
@@ -25,10 +26,12 @@ class EasyFaceApi < Sinatra::Base
   end
 
   post '/photos/:user_id/detect' do
-    urls = params["urls"]
+    urls = params["urls"].uniq
     users = {}
 
     faces = client.faces_recognize(:uids => user_id, :urls => urls.join(","))
+    logger.debug faces
+
     faces["photos"].each do |photo|
       tag = photo["tags"].first
       if tag && tag["uids"]
@@ -74,5 +77,9 @@ class EasyFaceApi < Sinatra::Base
     picture_file = "#{photo[:tempfile].path}.jpg"
     FileUtils.cp photo[:tempfile].path, picture_file
     File.new(picture_file, 'rb')
+  end
+
+  def logger
+    @logger ||= Logger.new(settings.log_file)
   end
 end
